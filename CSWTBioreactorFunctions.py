@@ -1,8 +1,6 @@
 def BR_fileimport (path='HydraData/'):
     '''
-    This is a package for importing .csv files from Central Coast Wetland Group's 
-    2017-2021 12-channel bioreactor experiment and storing them in Pandas dataframes.
-    Appends all data frames with UTC dates and times converted from unix time. 
+    This is a package for importing .csv files from Central Coast Wetland Group's 2017-2021 12-channel bioreactor experiment and storing them in Pandas dataframes and parses column 3 of each file as UTC dates. 
     
     Parameters
     -------------
@@ -15,43 +13,8 @@ def BR_fileimport (path='HydraData/'):
     -------------
     dffb: dataframe
         Dataframe containing fb.csv covering data from the bioreactor forebay.
-        Appended with UTC dates and times converted from unix time.
     dfclist: list
         List containging dataframes for channels 1 through 12 of the bioreactor.
-        Dataframes are appended with UTC dates and times converted from unix time.
-    '''
-    #Import Pandas module
-    import pandas as pd
-
-    #Read and store data for the forebay in a dataframe
-    dffb = pd.read_csv(path + 'fb.csv', header=0, na_values='')
-    #Create a column for UTC dates and times converted from unix times in the forebay dataframe
-    dffb['utc_datetime']=pd.to_datetime(dffb['unix_time'], unit='s')
-    #Create an empty list for bioreactor channel dataframes
-    dfclist=[]
-    #For loop to read through .csv files labeled c1 through c12
-    #Creates a list of dataframes with for the 12 channels of the bioreactor
-    for i in range(1,13):
-        #Read and store .csv file in a dataframe
-        #Append a list of dataframes with bioreactor channels
-        dfclist.append(pd.read_csv(path+ '/c' + str(i) + '.csv', header=0, na_values=''))
-    #Create a column for UTC dates and times converted from unix times in each dataframe
-    for df in dfclist:
-        df['utc_datetime']=pd.to_datetime(df['unix_time'], unit='s')
-    return(dffb,dfclist)
-
-def BR_ParseChannels (dfclist):
-    '''
-    This package isolates dataframes for individual bioreactor channels 
-    from the dfclist created using the CSWTBioreactorFunctions.BR_filimport function.
-    
-    Parameters
-    -----------
-    dfclist: list
-        List containging dataframes for channels 1 through 12 of the bioreactor.
-
-    Returns
-    -----------
     dfc1: dataframe
         Dataframe for data from channel 1 of the 12-channel bioreactor treatment.
     dfc2: dataframe
@@ -77,6 +40,19 @@ def BR_ParseChannels (dfclist):
     dfc12: dataframe
         Dataframe for data from channel 12 of the 12-channel bioreactor treatment.
     '''
+    #Import Pandas module
+    import pandas as pd
+
+    #Read and store data for the forebay in a dataframe and parse dates
+    dffb = pd.read_csv(path + 'fb.csv', header=0, na_values='',parse_dates=[2])
+    #Create an empty list for bioreactor channel dataframes
+    dfclist=[]
+    #For loop to read through .csv files labeled c1 through c12
+    #Creates a list of dataframes with for the 12 channels of the bioreactor
+    for i in range(1,13):
+        #Read and store .csv file in a dataframe
+        #Append a list of dataframes with bioreactor channels
+        dfclist.append(pd.read_csv(path+ '/c' + str(i) + '.csv', header=0, na_values='',parse_dates=[2]))
     #Parse dataframes for inidividual channels contained in dfclist into discrete dataframes
     for i in range(0,12):
         if i==0:
@@ -103,5 +79,5 @@ def BR_ParseChannels (dfclist):
             dfc11=dfclist[i]
         elif i==11:
             dfc12=dfclist[i]
-    return(dfc1,dfc2,dfc3,dfc4,dfc5,dfc6,dfc7,dfc8,dfc9,dfc10,dfc11,dfc12)
 
+    return(dffb,dfclist,dfc1,dfc2,dfc3,dfc4,dfc5,dfc6,dfc7,dfc8,dfc9,dfc10,dfc11,dfc12)
