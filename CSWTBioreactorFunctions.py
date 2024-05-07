@@ -1,4 +1,4 @@
-def BR_fileimport (path='HydraData/'):
+def fileimport (path='HydraData/'):
     '''
     This is a package for importing .csv files from Central Coast Wetland Group's 2017-2021 12-channel bioreactor experiment and storing them in Pandas dataframes and parses column 3 of each file as UTC dates. 
     
@@ -81,3 +81,74 @@ def BR_fileimport (path='HydraData/'):
             dfc12=dfclist[i]
 
     return(dffb,dfclist,dfc1,dfc2,dfc3,dfc4,dfc5,dfc6,dfc7,dfc8,dfc9,dfc10,dfc11,dfc12)
+
+def timewindow (df, begin, end):
+    '''Creates a sub-dataframe focusing on a discrete, specified time window when given a dataframe with starting and ending unix times. Requires Pandas Python package.
+
+    Parameters
+    -----------
+    df: dataframe
+        Original Pandas dataframe to parse into a smaller timeseries.
+    begin: int
+        Unix time string indicating the start of the timeseries to be isolated.
+    end: int
+        Unix time string indicating the end of the timeseries to be isolated.
+        
+    Returns
+    -----------
+    dfsub: dataframe
+        New Pandas sub-dataframe defined by beginning and ending unix times.
+    '''
+    import pandas as pd
+    ii = (begin <= df['unix_time']) & (df['unix_time'] <= end) 
+    dfsub = df[ii]
+    
+    return(dfsub)
+    
+def dfclean (dataframe,var='nitrate'):
+    '''Creates a sub-dataframe from a provided dataframe with rows containing no values or negative values removed. Requires numpy and pandas.
+    
+    Parameters
+    -------------
+    dataframe: dataframe
+        Provided Pandas  
+    var: string
+        Column for nitrogen values. Either 'nitrate', 's_nitrate', or 's_nitrogen' for CCWG bioreactor data. Defaults to 'nitrate'.
+
+    Returns
+    -------------
+    dfcleaned: dataframe
+        Data frame with rows containing negative values or no values removed.
+    '''
+    import numpy as np
+    import pandas as pd
+    df = dataframe
+    ii_finite = (np.isfinite(df[var])) & (np.isfinite(df['temp'])) & (np.isfinite(df['cond'])) & (np.isfinite(df['sal'])) & (np.isfinite(df['hdo'])) & (np.isfinite(df['sat'])) & (np.isfinite(df['phv'])) & (np.isfinite(df['ph']))
+    dffinite = df[ii_finite]
+    ii_positive = (0<=dffinite[var]) & (0<=dffinite['temp']) & (0<=dffinite['cond'])& (0<=dffinite['sal']) & (0<=dffinite['hdo']) & (0<=dffinite['sat']) & (0<=dffinite['phv']) & (0<=dffinite['ph'])
+    dfcleaned = dffinite[ii_positive]
+    return(dfcleaned)
+
+def dfclean_nitratetemp (dataframe,var='nitrate'):
+    '''Creates a sub-dataframe from a provided dataframe with rows containing no values or negative values removed for nitrogen and temperature columns. Requires numpy and pandas.
+    
+    Parameters
+    -------------
+    dataframe: dataframe
+        Provided Pandas  
+    var: string
+        Column for nitrogen values. Either 'nitrate', 's_nitrate', or 's_nitrogen' for CCWG bioreactor data. Defaults to 'nitrate'.
+
+    Returns
+    -------------
+    dfcleanednt: dataframe
+        Data frame with rows containing negative values or no values removed for nitrogen and temperture columns.
+    '''
+    import numpy as np
+    import pandas as pd
+    df = dataframe
+    ii_finite = (np.isfinite(df[var])) & (np.isfinite(df['temp']))
+    dffinite = df[ii_finite]
+    ii_positive = (0<=dffinite[var]) & (0<=dffinite['temp'])
+    dfcleanednt = dffinite[ii_positive]
+    return(dfcleanednt)
