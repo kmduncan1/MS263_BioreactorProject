@@ -1,4 +1,8 @@
+#Annoying mac file
 .DS_Store
-/FinalProjectTestBed
+#Project test bed with draft code
+FinalProjectTestBed/
+#Jupyter notebook checkpoints
 .ipynb_checkpoints/
+#Python cache
 __pycache__/
