@@ -1,6 +1,6 @@
 def fileimport (path='HydraData/'):
     '''
-   Package for importing CSV files from Central Coast Wetland Group's 2017-2021 12-channel bioreactor experiment, storing them in Pandas dataframes, and parsing column 3 of each file as UTC dates. 
+    This is a package for importing .csv files from Central Coast Wetland Group's 2017-2021 12-channel bioreactor experiment and storing them in Pandas dataframes and parses column 3 of each file as UTC dates. 
     
     Parameters
     -------------
@@ -40,6 +40,7 @@ def fileimport (path='HydraData/'):
     dfc12: dataframe
         Dataframe for data from channel 12 of the 12-channel bioreactor treatment.
     '''
+    #Import Pandas module
     import pandas as pd
 
     #Read and store data for the forebay in a dataframe and parse dates
@@ -81,58 +82,16 @@ def fileimport (path='HydraData/'):
 
     return(dffb,dfclist,dfc1,dfc2,dfc3,dfc4,dfc5,dfc6,dfc7,dfc8,dfc9,dfc10,dfc11,dfc12)
 
-def multiple_timewindows(df, n_timeframes, t_startlist, t_endlist):
-    '''Creates and returns multiple sub-dataframes from time windows from a list of starting times and a list of ending times. Stitches those sub-dataframes into a single dataframe which is then returned.
-
-    Parameters
-    -----------
-    df: dataframe
-       Dataframe to parse into a smaller timeseries.
-    n_timeframes: integer
-        Variable containing the number of timeframes to be parsed into sub-dataframes.
-    t_startlist: list
-        List containing starting Unix times for the beginning of each sub-dataframe generated.
-        Can contain integers or floats. The number of entries must equal the integer in n_timeframes.
-    t_endlist: list
-        List containing ending Unix times for the beginning of each sub-dataframe generated.
-        Can contain integers or floats. The number of entries must equal the integer in n_timeframes.
-        
-    Returns
-    -----------
-    concatdf: dataframe
-        Dataframe encompassing all isolated sub-dataframes stitched together using pd.concat().
-    dfsub1, dfsub2, dfsubn: dataframe(s)
-        Sub-dataframes defined by starting and end times contained in 
-        The function will return a number of dataframes equal to the integer contained in n_timeframes.
-        '''
-    import pandas as pd
-    namenumber = 0  #Initialize variable for naming sub-dataframes
-    dfsubdict={} #Initialize dictionary to hold sub-dataframes (key=sub-dataframe name; entry=sub-dataframe)
-
-    #Use n_timeframes to loop for start and end time lists
-    for var in range(n_timeframes):
-        #Boolean array isolating timewindows defined by positions in the start and end time lists
-        ii = (df['unix_time'] >= t_startlist[var]) & (df['unix_time'] <= t_endlist[var])
-        
-        dfsubdict[f'dfsub{namenumber + 1}'] = df[ii] #Use f-string to loop through namenumber variable to name dfsub keys
-        namenumber += 1 #Increase namenumber for next loop
-
-    #Use pd.concat() to stitch dataframes in dfsubdict together
-    concatdf = pd.concat([dfsubdict[f'dfsub{n+1}'] for n in range(n_timeframes)]) #Use f-string and for loop to cycle through dictionary entries
-
-    #Return stitched dataframe and use * to pull each sub-dataframe from the dfsubdict
-    return (concatdf, *(dfsubdict[f'dfsub{n+1}'] for n in range(n_timeframes))) #Use * to pull sub-dataframes from the dictionary with each loop
-
-def one_timewindow (df, t_begin, t_end):
-    '''Creates a sub-dataframe focusing on a single specified time window when given a dataframe with starting and ending unix times.
+def timewindow (df, begin, end):
+    '''Creates a sub-dataframe focusing on a discrete, specified time window when given a dataframe with starting and ending unix times. Requires Pandas Python package.
 
     Parameters
     -----------
     df: dataframe
         Original Pandas dataframe to parse into a smaller timeseries.
-    t_begin: int
+    begin: int
         Unix time string indicating the start of the timeseries to be isolated.
-    t_end: int
+    end: int
         Unix time string indicating the end of the timeseries to be isolated.
         
     Returns
@@ -140,51 +99,61 @@ def one_timewindow (df, t_begin, t_end):
     dfsub: dataframe
         New Pandas sub-dataframe defined by beginning and ending unix times.
     '''
-    ii = (t_begin <= df['unix_time']) & (df['unix_time'] <= t_end) 
+    import pandas as pd
+    ii = (begin <= df['unix_time']) & (df['unix_time'] <= end) 
     dfsub = df[ii]
     
     return(dfsub)
     
-def clean_data (df, parselist):
-    '''Creates a sub-dataframe from a provided dataframe with rows containing no values or negative values removed.
+def dfclean (dataframe,var='nitrate'):
+    '''Creates a sub-dataframe from a provided dataframe with rows containing no values or negative values removed. Requires numpy and pandas.
     
     Parameters
     -------------
-    df: dataframe
-        Provided dataframe to be parsed.
-    parselist: List
-        List of column headers to be parsed.
+    dataframe: dataframe
+        Provided Pandas  
+    var: string
+        Column for nitrogen values. Either 'nitrate', 's_nitrate', or 's_nitrogen' for CCWG bioreactor data. Defaults to 'nitrate'.
 
     Returns
     -------------
-    dfparsed: dataframe
-        Data frame with rows containing negative values or no values removed from selected columns.
+    dfcleaned: dataframe
+        Data frame with rows containing negative values or no values removed.
     '''
+    import numpy as np
     import pandas as pd
+    df = dataframe
+    ii_finite = (np.isfinite(df[var])) & (np.isfinite(df['temp'])) & (np.isfinite(df['cond'])) & (np.isfinite(df['sal'])) & (np.isfinite(df['hdo'])) & (np.isfinite(df['sat'])) & (np.isfinite(df['phv'])) & (np.isfinite(df['ph']))
+    dffinite = df[ii_finite]
+    ii_positive = (0<=dffinite[var]) & (0<=dffinite['temp']) & (0<=dffinite['cond'])& (0<=dffinite['sal']) & (0<=dffinite['hdo']) & (0<=dffinite['sat']) & (0<=dffinite['phv']) & (0<=dffinite['ph'])
+    dfcleaned = dffinite[ii_positive]
+    return(dfcleaned)
 
-    #Create boolean arrays to store True/False values for 
-    #Create an array of False values for NaN that is the same dimensions as df
-    ii_NaN = pd.Series(data=False, index=df.index)  #If a cell has data the corresponding position in the boolean array will remain False
-    #Create an array of True values for positive values that is the same dimensions as df
-    ii_Pos = pd.Series(data=True, index=df.index)   #If a cell is positive the corresponding position in the boolean array will remain True
-
-    #Loop through variables in list
-    for var in parselist:
-        #Keep the boolean intact with each succesive loop and use | (or) to update boolean with data for new variables in the list
-        ii_NaN = ii_NaN | df[var].isnull() #use df[var].isnull() to find null value in cells and assign corresponding position in the boolean True
-        
-        #Keep the boolean intact with each succesive loop and use & to update boolean with data for new variables in the list 
-        ii_Pos = ii_Pos & (df[var] >= 0)  #Use &(and) to find positive values in a given column; if cells are negative the corresponding position in the boolean array is assigned False
-
-    #Create a dataframe that has finite values in all cells for variables in parselist  
-    df_NaN = df.loc[~ii_NaN] #Locate rows in df where ii_NaN is not True for variables in parselist
+def dfclean_nitratetemp (dataframe,var='nitrate'):
+    '''Creates a sub-dataframe from a provided dataframe with rows containing no values or negative values removed for nitrogen and temperature columns. Requires numpy and pandas.
     
-    #Use df_NaN to create a dataframe where both NaN and non-positive values are removed
-    dfparsed = df_NaN.loc[ii_Pos] #Locate rows in df where ii_Pos is True for variables in parselist
-    
-    return (dfparsed)
+    Parameters
+    -------------
+    dataframe: dataframe
+        Provided Pandas  
+    var: string
+        Column for nitrogen values. Either 'nitrate', 's_nitrate', or 's_nitrogen' for CCWG bioreactor data. Defaults to 'nitrate'.
 
-def PCA_variables(df,varlist=['temp','hdo','sat','s_nitrogen']):
+    Returns
+    -------------
+    dfcleanednt: dataframe
+        Data frame with rows containing negative values or no values removed for nitrogen and temperture columns.
+    '''
+    import numpy as np
+    import pandas as pd
+    df = dataframe
+    ii_finite = (np.isfinite(df[var])) & (np.isfinite(df['temp']))
+    dffinite = df[ii_finite]
+    ii_positive = (0<=dffinite[var]) & (0<=dffinite['temp'])
+    dfcleanednt = dffinite[ii_positive]
+    return(dfcleanednt)
+
+def BioreactorPCA(df,varlist=['temp','cond','sal','nitrate','hdo','sat','phv','ph']):
     '''Function to calculate eigenvalues, eigenvectors, principle component scores, percent variance accounted for by PC1 and PC2, PC factor loading matrix, and PC scores from a list of variables for a given pandas dataframe.
         Parameters
     -------------
@@ -193,7 +162,7 @@ def PCA_variables(df,varlist=['temp','hdo','sat','s_nitrogen']):
         Example: '.../MS263_Project/HydraData/'
         Defaults to 'HydraData/' assuming HydraData folder is stored in the same folder as the module for this package.
     varlist: list
-        List of variables to use for PCA. Defaults to short_vars = ['temp','hdo','sat','s_nitrogen'].
+        List of variables to use for PCA. Defaults to short_vars = ['temp','cond','sal','nitrate','hdo','sat','phv','ph'].
 
     Returns
     -------------
