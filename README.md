@@ -9,7 +9,7 @@ Data information:
 
 - Thirteen are utilized in this project notebook
 
--CCWG website: https://mlml.sjsu.edu/ccwg/
+- CCWG website: https://mlml.sjsu.edu/ccwg/
 
 ---------------------------------------------------------------------------
 Notebook requirements:
