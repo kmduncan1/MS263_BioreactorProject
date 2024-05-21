@@ -5,9 +5,11 @@ Katie Duncan's MS263 class project for Spring 2024
 ---------------------------------------------------------------------------
 Data information:
 
-- Fourteen CSV files were provided by Central Coast Wetlands Group for this project
+- Fourteen CSV files were provided by Central Coast Wetlands Group(CCWG) for this project
 
 - Thirteen are utilized in this project notebook
+
+-CCWG website: https://mlml.sjsu.edu/ccwg/
 
 ---------------------------------------------------------------------------
 Notebook requirements:
@@ -18,19 +20,12 @@ Notebook requirements:
 
 - Custom CSWTBioreactorFunctions module (Contained in main directory)
 
-- Packages and modules (Embedded in project notebook)
-
-import cartopy.crs as ccrs
-import cartopy.io.img_tiles as cimgt
-import matplotlib.pyplot as plt
-import pandas as pd
-import CSWTBioreactorFunctions as CBRF
-import numpy as np
-from scipy import linalg
-import seaborn as sns
-import cmocean.cm as cmo
-
----------------------------------------------------------------------------
-Class notes: Ideas from class discussion May 7th
-1. Figure out how to remove NaN values from pandas dataframe
-2. Consider spectral analysis of potential diel variations in temperature
+- Functionality requires the following packages (Also embedded in project notebook):
+    - cartopy.crs
+    - cartopy.io.img_tiles
+    - matplotlib.pyplot
+    - pandas
+    - numpy
+    - scipy
+    - pingouin
+    - seaborn

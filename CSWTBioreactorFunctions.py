@@ -1,4 +1,4 @@
-def fileimport (path='HydraData/'):
+def fileimport(path='HydraData/'):
     '''
    Package for importing CSV files from Central Coast Wetland Group's 2017-2021 12-channel bioreactor experiment, storing them in Pandas dataframes, and parsing column 3 of each file as UTC dates. 
     
@@ -121,9 +121,9 @@ def multiple_timewindows(df, n_timeframes, t_startlist, t_endlist):
     concatdf = pd.concat([dfsubdict[f'dfsub{n+1}'] for n in range(n_timeframes)]) #Use f-string and for loop to cycle through dictionary entries
 
     #Return stitched dataframe and use * to pull each sub-dataframe from the dfsubdict
-    return (concatdf, *(dfsubdict[f'dfsub{n+1}'] for n in range(n_timeframes))) #Use * to pull sub-dataframes from the dictionary with each loop
+    return(concatdf, *(dfsubdict[f'dfsub{n+1}'] for n in range(n_timeframes))) #Use * to pull sub-dataframes from the dictionary with each loop
 
-def one_timewindow (df, t_begin, t_end):
+def one_timewindow(df, t_begin, t_end):
     '''Creates a sub-dataframe focusing on a single specified time window when given a dataframe with starting and ending unix times.
 
     Parameters
@@ -145,7 +145,7 @@ def one_timewindow (df, t_begin, t_end):
     
     return(dfsub)
     
-def clean_data (df, parselist):
+def clean_data(df, parselist):
     '''Creates a sub-dataframe from a provided dataframe with rows containing no values or negative values removed.
     
     Parameters
@@ -182,7 +182,7 @@ def clean_data (df, parselist):
     #Use df_NaN to create a dataframe where both NaN and non-positive values are removed
     dfparsed = df_NaN.loc[ii_Pos] #Locate rows in df where ii_Pos is True for variables in parselist
     
-    return (dfparsed)
+    return(dfparsed)
 
 def PCA_variables(df,varlist=['temp','hdo','sat','s_nitrogen']):
     '''Function to calculate eigenvalues, eigenvectors, principle component scores, percent variance accounted for by PC1 and PC2, PC factor loading matrix, and PC scores from a list of variables for a given pandas dataframe.
